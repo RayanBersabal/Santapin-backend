@@ -4,81 +4,97 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
-    // Public: Get all products
+    // GET /api/products
     public function index()
     {
-        return Product::all();
+        return response()->json(Product::all());
     }
 
-    // Admin: Create product
-    public function store(Request $request)
+    // GET /api/products/{id}
+    public function show($id)
     {
-        $request->validate([
-            'name'        => 'required|string',
-            'description' => 'nullable|string',
-            'price'       => 'required|numeric',
-            'category'    => 'required|string',
-            'image'       => 'nullable|image|max:2048',
-        ]);
+        $product = Product::find($id);
 
-        $imagePath = null;
-
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
+        if (!$product) {
+            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
         }
-
-        $product = Product::create([
-            'name'        => $request->name,
-            'description' => $request->description,
-            'price'       => $request->price,
-            'category'    => $request->category,
-            'image'       => $imagePath,
-        ]);
-
-        return response()->json($product, 201);
-    }
-
-    // Public: Show a single product
-    public function show(Product $product)
-    {
-        return $product;
-    }
-
-    // Admin: Update product
-    public function update(Request $request, Product $product)
-    {
-        $request->validate([
-            'name'        => 'sometimes|string',
-            'description' => 'nullable|string',
-            'price'       => 'sometimes|numeric',
-            'category'    => 'sometimes|string',
-            'image'       => 'nullable|image|max:2048',
-        ]);
-
-        if ($request->hasFile('image')) {
-            if ($product->image) {
-                Storage::disk('public')->delete($product->image);
-            }
-            $product->image = $request->file('image')->store('products', 'public');
-        }
-
-        $product->update($request->except('image'));
 
         return response()->json($product);
     }
 
-    // Admin: Delete product
-    public function destroy(Product $product)
+    // POST /api/products
+    public function store(Request $request)
     {
-        if ($product->image) {
+        $validated = $request->validate([
+            'name'        => 'required|string|max:255',
+            'description' => 'required|string',
+            'price'       => 'required|numeric',
+            'category'    => ['required', Rule::in(['Makanan', 'Minuman'])],
+            'image'       => 'nullable|image|max:2048',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('products', 'public');
+        }
+
+        $product = Product::create($validated);
+
+        return response()->json($product, 201);
+    }
+
+    // PUT /api/products/{id}
+    public function update(Request $request, $id)
+    {
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
+        }
+
+        $validated = $request->validate([
+            'name'        => 'sometimes|required|string|max:255',
+            'description' => 'sometimes|required|string',
+            'price'       => 'sometimes|required|numeric',
+            'category'    => ['sometimes', 'required', Rule::in(['Makanan', 'Minuman'])],
+            'image'       => 'nullable|image|max:2048',
+        ]);
+
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($product->image && Storage::disk('public')->exists($product->image)) {
+                Storage::disk('public')->delete($product->image);
+            }
+
+            $validated['image'] = $request->file('image')->store('products', 'public');
+        }
+
+        $product->update($validated);
+
+        return response()->json($product);
+    }
+
+    // DELETE /api/products/{id}
+    public function destroy($id)
+    {
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
+        }
+
+        // Delete image if exists
+        if ($product->image && Storage::disk('public')->exists($product->image)) {
             Storage::disk('public')->delete($product->image);
         }
+
         $product->delete();
 
-        return response()->json(['message' => 'Product deleted']);
+        return response()->json(['message' => 'Produk berhasil dihapus']);
     }
 }

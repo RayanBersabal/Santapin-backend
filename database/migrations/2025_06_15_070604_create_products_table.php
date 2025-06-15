@@ -9,14 +9,14 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void {
+     public function up(): void {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('description');
-            $table->decimal('price', 10, 2);
-            $table->enum('category', ['makanan', 'minuman']);
-            $table->string('image')->nullable();
+            $table->text('description')->nullable();
+            $table->unsignedInteger('price');
+            $table->enum('category', ['Makanan', 'Minuman']);
+            $table->string('image')->nullable(); // image path
             $table->timestamps();
         });
     }
