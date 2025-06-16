@@ -11,9 +11,17 @@ use Illuminate\Validation\Rule;
 class ProductController extends Controller
 {
     // GET /api/products
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Product::all());
+        //return response()->json(Product::all());
+         $query = Product::query();
+        if ($request->has('category') && in_array($request->category, ['Makanan', 'Minuman'])) {
+            $query->where('category', $request->category);
+        }
+
+        return response()->json([
+            'data' => $query->orderBy('created_at', 'desc')->get()
+        ]);
     }
 
     // GET /api/products/{id}

@@ -20,7 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // ✅ Admin-only Product Management
-Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
+Route::middleware(['auth:sanctum','is_admin'])->group(function () {
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
