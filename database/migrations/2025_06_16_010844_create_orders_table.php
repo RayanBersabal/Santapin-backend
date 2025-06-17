@@ -6,39 +6,39 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Siapa yang memesan
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
-        // Informasi dari form checkout
-        $table->string('customer_name');        // Nama Lengkap
-        $table->string('customer_phone');       // Nomor HP
-        $table->text('delivery_address');       // Alamat Pengantaran
-        $table->text('notes')->nullable();      // Pesan untuk Dapur (opsional)
+            // Informasi dari form checkout
+            $table->string('customer_name');
+            $table->string('customer_phone');
+            $table->text('delivery_address');
+            $table->text('notes')->nullable();
 
-        // Informasi Pembayaran dan Harga
-        $table->string('payment_type');         // Tipe Pembayaran (e.g., 'cod', 'wallet', 'bank_transfer')
-        $table->decimal('subtotal', 10, 2);     // Subtotal
-        $table->decimal('delivery_fee', 10, 2); // Ongkir
-        $table->decimal('admin_fee', 10, 2);    // Biaya Admin
-        $table->decimal('total_amount', 10, 2); // Total
+            // Informasi Pembayaran dan Harga (Perhatikan Tipe Data unsignedInteger sesuai product price Anda)
+            $table->string('payment_type');
+            $table->unsignedInteger('subtotal');
+            $table->unsignedInteger('delivery_fee');
+            $table->unsignedInteger('admin_fee');
+            $table->unsignedInteger('total_amount');
 
-        // Status dan Informasi Tambahan
-        $table->string('status')->default('pending'); // Status pesanan: pending, processing, delivering, completed, cancelled
-        $table->string('estimated_delivery_time')->nullable(); // Estimasi Waktu Pengantaran
+            // --- KOLOM BARU UNTUK STATUS PEMBAYARAN DAN PESANAN ---
+            $table->string('payment_status')->default('pending'); // Status pembayaran: pending, paid, failed
+            $table->string('payment_reference')->nullable();     // ID transaksi atau referensi pembayaran
+            $table->timestamp('paid_at')->nullable();           // Waktu pembayaran dikonfirmasi
+            // --- AKHIR KOLOM BARU ---
 
-        $table->timestamps(); // created_at dan updated_at
-    });
+            // Status dan Informasi Tambahan (kolom 'status' yang sudah ada)
+            $table->string('status')->default('Dipesan'); // Status pesanan: Dipesan, Disiapkan, Dikirim, Pesanan Selesai
+            $table->string('estimated_delivery_time')->nullable();
+
+            $table->timestamps();
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('orders');

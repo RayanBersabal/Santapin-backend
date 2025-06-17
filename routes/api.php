@@ -27,10 +27,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/cart/{cart}', [CartController::class, 'destroy']); // Untuk menghapus item dari keranjang
     Route::post('/cart/clear', [CartController::class, 'clearCart']); // <-- Rute BARU untuk mengosongkan keranjang
 
-    // Order Routes
+     // Tambahkan rute GET untuk mengambil semua pesanan
+    Route::get('/orders', [OrderController::class, 'index']); // <-- TAMBAHKAN INI
+
+    // Tambahkan rute GET untuk mengambil detail pesanan berdasarkan ID
+    Route::get('/orders/{id}', [OrderController::class, 'show']); // <-- TAMBAHKAN INI
+
+    // Rute untuk membuat pesanan (sudah ada)
     Route::post('/orders', [OrderController::class, 'store']);
-    // Tambahkan rute untuk melihat pesanan jika diperlukan (misal: Route::get('/orders', [OrderController::class, 'index']);)
-    // Akan kita tambahkan nanti jika belum ada
 });
 
 // ✅ Admin-only Product Management

@@ -11,28 +11,33 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
-        'order_number',
+        'customer_name',
+        'customer_phone',
+        'delivery_address',
+        'notes',
+        'payment_type',
         'subtotal',
-        'shipping_cost',
+        'delivery_fee',
         'admin_fee',
         'total_amount',
-        'status',
-        'customer_details',
-        'payment_method',
-        'payment_status',
-    ];
-    // Casts ini akan mengubah kolom JSON menjadi array/object secara otomatis
-    protected $casts = [
-        'customer_details' => 'array',
+        'payment_status',    // Kolom baru
+        'payment_reference', // Kolom baru
+        'paid_at',           // Kolom baru
+        'status',            // Kolom status pesanan yang sudah ada
+        'estimated_delivery_time',
     ];
 
+    // Relasi ke User yang memesan
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function items()
+    // Relasi ke OrderItems (item-item dalam pesanan ini)
+    public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    // ... metode atau relasi lain jika ada
 }
