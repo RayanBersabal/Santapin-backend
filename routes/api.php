@@ -3,8 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\OrderController;
+use App\Http\Controllers\CartController; // Pastikan ini di-import
+use App\Http\Controllers\OrderController; // Pastikan ini di-import
 
 // ✅ Public Auth Routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -20,10 +20,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    Route::post('/orders', [OrderController::class, 'store']);
-    Route::get('/cart', [CartController::class, 'index']);      // Untuk melihat isi keranjang
-    Route::post('/cart', [CartController::class, 'store']);     // Untuk menambah item ke keranjang
+    // Cart Routes
+    Route::get('/cart', [CartController::class, 'index']);           // Untuk melihat isi keranjang
+    Route::post('/cart', [CartController::class, 'store']);          // Untuk menambah item ke keranjang
+    Route::patch('/cart/{cart}', [CartController::class, 'updateQuantity']); // <-- Rute BARU untuk update quantity
     Route::delete('/cart/{cart}', [CartController::class, 'destroy']); // Untuk menghapus item dari keranjang
+    Route::post('/cart/clear', [CartController::class, 'clearCart']); // <-- Rute BARU untuk mengosongkan keranjang
+
+    // Order Routes
+    Route::post('/orders', [OrderController::class, 'store']);
+    // Tambahkan rute untuk melihat pesanan jika diperlukan (misal: Route::get('/orders', [OrderController::class, 'index']);)
+    // Akan kita tambahkan nanti jika belum ada
 });
 
 // ✅ Admin-only Product Management
