@@ -48,13 +48,13 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return response()->json(['message' => 'Password dan Email Salah'], 401);
         }
 
         $user = Auth::user();
 
         if ($user->role !== Role::USER) {
-            return response()->json(['message' => 'Not a user account'], 403);
+            return response()->json(['message' => 'Bukan Akun User'], 403);
         }
 
         $token = $user->createToken('authToken')->plainTextToken;
@@ -74,13 +74,13 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return response()->json(['message' => 'Password dan Email Salah'], 401);
         }
 
         $user = Auth::user();
 
         if ($user->role !== Role::ADMIN) {
-            return response()->json(['message' => 'Not an admin account'], 403);
+            return response()->json(['message' => 'Bukan Akun Admin'], 403);
         }
 
         $token = $user->createToken('authToken')->plainTextToken;

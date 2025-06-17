@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 
 // ✅ Public Auth Routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -17,6 +19,11 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::get('/cart', [CartController::class, 'index']);      // Untuk melihat isi keranjang
+    Route::post('/cart', [CartController::class, 'store']);     // Untuk menambah item ke keranjang
+    Route::delete('/cart/{cart}', [CartController::class, 'destroy']); // Untuk menghapus item dari keranjang
 });
 
 // ✅ Admin-only Product Management
@@ -27,4 +34,5 @@ Route::middleware(['auth:sanctum','is_admin'])->group(function () {
 });
 
 // ✅ Health check (optional)
+Route::get('/', fn () => response()->json(['message' => 'Api Santapin']));
 Route::get('/ping', fn () => response()->json(['message' => 'pong']));

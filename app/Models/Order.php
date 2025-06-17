@@ -10,7 +10,20 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'name', 'phone', 'address', 'note', 'status', 'payment_type', 'admin_fee', 'total'
+        'user_id',
+        'order_number',
+        'subtotal',
+        'shipping_cost',
+        'admin_fee',
+        'total_amount',
+        'status',
+        'customer_details',
+        'payment_method',
+        'payment_status',
+    ];
+    // Casts ini akan mengubah kolom JSON menjadi array/object secara otomatis
+    protected $casts = [
+        'customer_details' => 'array',
     ];
 
     public function user()
