@@ -34,9 +34,12 @@ class AuthController extends Controller
         $token = $user->createToken('authToken')->plainTextToken;
 
         return response()->json([
-            'user'  => $user,
-            'token' => $token,
-        ], 201);
+            'message' => 'Registrasi berhasil!', // Pesan opsional untuk frontend
+            'data' => [ // <-- TAMBAHKAN WRAPPER 'data' INI
+                'user'  => $user,
+                'token' => $token,
+            ]
+        ], 201); // Status 201 Created
     }
 
     // Login for User
@@ -48,21 +51,25 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Password dan Email Salah'], 401);
+            return response()->json(['message' => 'Email atau Password Salah!'], 401); // Pesan lebih user-friendly
         }
 
         $user = Auth::user();
 
-        if ($user->role !== Role::USER) {
-            return response()->json(['message' => 'Bukan Akun User'], 403);
+        if ($user->role->value !== Role::USER->value) {
+            Auth::logout();
+            return response()->json(['message' => 'Akun ini bukan akun pengguna biasa.'], 403);
         }
 
         $token = $user->createToken('authToken')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ]);
+            'message' => 'Login berhasil!', // Pesan opsional untuk frontend
+            'data' => [
+                'user' => $user,
+                'token' => $token,
+            ]
+        ]); // Status default 200 OK
     }
 
     // Login for Admin
@@ -74,21 +81,25 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Password dan Email Salah'], 401);
+            return response()->json(['message' => 'Email atau Password Salah!'], 401); // Pesan lebih user-friendly
         }
 
         $user = Auth::user();
 
-        if ($user->role !== Role::ADMIN) {
-            return response()->json(['message' => 'Bukan Akun Admin'], 403);
+        if ($user->role->value !== Role::ADMIN->value) {
+            Auth::logout();
+            return response()->json(['message' => 'Akun ini bukan akun administrator.'], 403);
         }
 
-        $token = $user->createToken('authToken')->plainTextToken;
+        $token = $user->createToken('adminAuthToken')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ]);
+            'message' => 'Login Administrator berhasil!',
+            'data' => [
+                'user' => $user,
+                'token' => $token,
+            ]
+        ]); // Status default 200 OK
     }
 
     // Logout
@@ -96,7 +107,7 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Logged out']);
+        return response()->json(['message' => 'Berhasil logout.']);
     }
 
     // Get current user
