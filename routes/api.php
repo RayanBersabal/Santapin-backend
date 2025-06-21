@@ -5,18 +5,19 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController; // <--- Pastikan ini ada!
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 
-// ✅ Public Auth Routes
+// Public Auth Routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/admin-login', [AuthController::class, 'adminLogin']);
 
-// ✅ Public Product Access
+// Public Product Access (GET only)
+// Ini adalah rute untuk semua user, termasuk yang tidak login, untuk melihat produk.
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 
-// ✅ Authenticated User Info & User-specific Routes
+// Authenticated User Info & User-specific Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -28,33 +29,29 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/cart/{cart}', [CartController::class, 'destroy']);
     Route::post('/cart/clear', [CartController::class, 'clearCart']);
 
-    // User Order Routes (menggunakan OrderController)
+    // User Order Routes
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders', [OrderController::class, 'store']);
-    // HAPUS BARIS INI JIKA ADA di blok ini: Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
-    // Karena update status akan ditangani oleh AdminOrderController
 });
 
-// ✅ Admin-only Routes
+// Admin-only Routes
 // Ini adalah blok untuk rute yang hanya bisa diakses oleh admin
-Route::middleware(['auth:sanctum','is_admin'])->prefix('admin')->group(function () { // <--- Pastikan Anda punya prefix('admin') di sini
-    // Admin-only Product Management (yang sudah ada)
+Route::middleware(['auth:sanctum','is_admin'])->prefix('admin')->group(function () {
+    // Admin-only Product Management (POST, PUT, DELETE for products)
+    // Frontend akan memanggil /api/admin/products untuk POST (create)
     Route::post('/products', [ProductController::class, 'store']);
+    // Frontend akan memanggil /api/admin/products/{id} untuk PUT (update)
     Route::put('/products/{id}', [ProductController::class, 'update']);
+    // Frontend akan memanggil /api/admin/products/{id} untuk DELETE
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
-    // ✅ Admin-only Order Management (TAMBAHKAN BLOK INI)
-    // Frontend Vue.js akan memanggil /api/admin/orders
+    // Admin-only Order Management
     Route::get('/orders', [AdminOrderController::class, 'index']);
-    // Frontend Vue.js akan memanggil /api/admin/orders/{id}/status
-    // `{order}` di sini adalah Route Model Binding, Laravel akan otomatis mencari Order berdasarkan ID
     Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus']);
-
-    // Opsional: Jika admin perlu melihat detail satu order spesifik via /api/admin/orders/{id}
-    // Route::get('/orders/{order}', [AdminOrderController::class, 'show']);
+    // Route::get('/orders/{order}', [AdminOrderController::class, 'show']); // Opsional
 });
 
-// ✅ Health check (optional)
+// Health check (optional)
 Route::get('/', fn () => response()->json(['message' => 'Api Santapin']));
 Route::get('/ping', fn () => response()->json(['message' => 'pong']));
