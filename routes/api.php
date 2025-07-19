@@ -66,4 +66,4 @@ Route::middleware(['auth:sanctum','is_admin'])->prefix('admin')->group(function 
 
 // Health check untuk memastikan api ada / terhubung (opsional)
 Route::get('/', fn () => response()->json(['message' => 'Api Santapin']));
-Route::get('/ping', fn () => response()->json(['message' => 'pong']));
+Route::get('/ping', fn () => response()->json(['message' => 'pong-pong']));
