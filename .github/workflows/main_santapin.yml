@@ -14,72 +14,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
 
-    - name: Install Composer dependencies
-      run: |
-        composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: Install Composer dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+          cp .env.example .env
+          php artisan key:generate
 
-    - name: Setup Laravel Environment
-      run: |
-        cp .env.example .env
-        php artisan key:generate
+      - name: Cache Laravel config
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
 
-    - name: Laravel Caching (config, routes, views)
-      run: |
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_EEF5D0B98C324BDCA1BF3E26EA3B9F0D }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3772C85FB40A48389099E9E467FE4239 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A871070A87034942B309C9D00FFE2E00 }}
 
-    - name: Set directory permissions
-      run: |
-        chmod -R 775 storage bootstrap/cache
+      - name: Zip app for deployment
+        run: zip -r release.zip . -x '*.git*'
 
-    - name: Login to Azure
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_EEF5D0B98C324BDCA1BF3E26EA3B9F0D }}
-        tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3772C85FB40A48389099E9E467FE4239 }}
-        subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A871070A87034942B309C9D00FFE2E00 }}
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'santapin' # your backend web app name
+          slot-name: 'Production'
+          package: release.zip
 
-    - name: Ensure web.config exists
-      run: |
-        echo '<?xml version="1.0" encoding="utf-8"?>
-        <configuration>
-          <system.webServer>
-            <rewrite>
-              <rules>
-                <rule name="Laravel" stopProcessing="true">
-                  <match url=".*" />
-                  <conditions logicalGrouping="MatchAll">
-                    <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />
-                    <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />
-                  </conditions>
-                  <action type="Rewrite" url="/public/index.php" />
-                </rule>
-              </rules>
-            </rewrite>
-          </system.webServer>
-        </configuration>' > web.config
-
-    - name: Zip app for deployment
-      run: |
-        zip -r release.zip . -x '*.git*' 'tests/*' 'node_modules/*'
-
-    - name: Deploy to Azure Web App
-      uses: azure/webapps-deploy@v3
-      with:
-        app-name: 'santapin'
-        slot-name: 'Production'
-        package: release.zip
-
-    - name: Run Laravel Migrations & Seeder (optional)
-      run: |
-        php artisan migrate --force || true
-        php artisan db:seed --force || true
+      # Optional – Run Laravel database migrations and seed
+      # Only if your Azure App already has DB configured
+      # Otherwise you can ssh into the container and run manually later
+      - name: Run Laravel Migrations & Seeder
+        if: ${{ always() }}
+        run: |
+          php artisan migrate --force
+          php artisan db:seed --force
