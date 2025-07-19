@@ -7,6 +7,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\ReviewController;
 
 // Public Auth Routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -16,11 +17,12 @@ Route::post('/admin-login', [AuthController::class, 'adminLogin']);
 // Public Product Access (GET only)
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
-
+Route::get('/products/{product}/reviews', [ReviewController::class, 'index']);
 // Digunakan oleh halaman About.vue untuk menampilkan daftar tim
-Route::get('/members', [MemberController::class, 'index']); 
+Route::get('/members', [MemberController::class, 'index']);
 
-// Authenticated User Info & User-specific Routes
+
+// Routes untuk User
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -36,6 +38,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders', [OrderController::class, 'store']);
+
+    Route::post('/products/{product}/reviews', [ReviewController::class, 'store']);
+    Route::put('/reviews/{review}', [ReviewController::class, 'update']);
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy']);
 });
 
 // Admin-only Routes
@@ -58,6 +64,6 @@ Route::middleware(['auth:sanctum','is_admin'])->prefix('admin')->group(function 
 
 
 
-// Health check (optional)
+// Health check untuk memastikan api ada / terhubung (opsional)
 Route::get('/', fn () => response()->json(['message' => 'Api Santapin']));
 Route::get('/ping', fn () => response()->json(['message' => 'pong']));

@@ -14,7 +14,7 @@ class Product extends Model
         'description',
         'price',
         'category',
-        'image', 
+        'image',
     ];
 
     public function feedbacks()
@@ -22,6 +22,11 @@ class Product extends Model
         return $this->hasMany(Feedback::class);
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+    
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
