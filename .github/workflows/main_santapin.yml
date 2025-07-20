@@ -1,13 +1,12 @@
-name: Build and Deploy Laravel Backend to Azure
+name: Deploy Laravel to Azure Web App
 
 on:
   push:
     branches:
-      - main
+      - main # Ganti dengan branch deployment Anda jika bukan 'main'
 
-permissions:
-  id-token: write
-  contents: read
+env:
+  PHP_VERSION: '8.2' # Sesuaikan dengan versi PHP di App Service Anda
 
 jobs:
   build-and-deploy:
@@ -20,66 +19,55 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.2'
+        php-version: ${{ env.PHP_VERSION }}
+        extensions: mbstring, pdo_mysql, zip, gd # Tambahkan ekstensi lain yang Anda butuhkan
+        ini-values: post_max_size=256M, upload_max_filesize=256M
+        tools: composer
 
-    - name: Install Composer dependencies
+    - name: Install Composer Dependencies
+      run: composer install --prefer-dist --no-interaction --no-dev --optimize-autoloader
+
+    # Opsional: Build frontend assets jika Anda menggunakan Vite, Webpack, atau lainnya
+    # Hapus bagian ini jika backend Anda murni API tanpa frontend yang perlu dibuild
+    - name: Build Frontend Assets (Optional)
       run: |
-        composer install --no-interaction --prefer-dist --optimize-autoloader
-
-    - name: Setup Laravel Environment
-      run: |
-        cp .env.example .env
-        php artisan key:generate
-
-    - name: Laravel Caching (config, routes, views)
-      run: |
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
-
-    - name: Set directory permissions
-      run: |
-        chmod -R 775 storage bootstrap/cache
-
-    - name: Login to Azure
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_EEF5D0B98C324BDCA1BF3E26EA3B9F0D }}
-        tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3772C85FB40A48389099E9E467FE4239 }}
-        subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A871070A87034942B309C9D00FFE2E00 }}
-
-    - name: Ensure web.config exists
-      run: |
-        echo '<?xml version="1.0" encoding="utf-8"?>
-        <configuration>
-          <system.webServer>
-            <rewrite>
-              <rules>
-                <rule name="Laravel" stopProcessing="true">
-                  <match url=".*" />
-                  <conditions logicalGrouping="MatchAll">
-                    <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />
-                    <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />
-                  </conditions>
-                  <action type="Rewrite" url="/public/index.php" />
-                </rule>
-              </rules>
-            </rewrite>
-          </system.webServer>
-        </configuration>' > web.config
+        npm install --legacy-peer-deps # Gunakan --legacy-peer-deps jika ada isu dependency
+        npm run build # Atau 'yarn build' jika Anda pakai Yarn
+      # Pastikan node_modules/ dan public/build/ tidak di .gitignore jika Anda ingin deploy hasil build
 
     - name: Zip app for deployment
       run: |
-        zip -r release.zip . -x '*.git*' 'tests/*' 'node_modules/*'
+        # Buat file .zip dari seluruh proyek, kecuali folder/file yang tidak diperlukan
+        # Pastikan folder 'vendor' dan 'public/build' (jika ada) ikut ter-zip
+        zip -r release.zip . -x '*.git*' 'tests/*' 'node_modules/*' '*.github/*' 'README.md' '.env' # Exclude .env, akan diatur di Azure App Settings
 
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
-        app-name: 'santapin'
-        slot-name: 'Production'
+        app-name: 'santapin' # Ganti dengan nama App Service Anda
+        slot-name: 'Production' # Biarkan 'Production' atau ganti jika Anda menggunakan deployment slot lain
         package: release.zip
+        # Tidak perlu 'startup-command' di sini jika Anda mengaturnya di Azure Portal
+        # startup-command: 'pm2 serve /home/site/wwwroot/public --no-daemon'
 
-    - name: Run Laravel Migrations & Seeder (optional)
+    - name: Run Laravel Migrations and Seeder
       run: |
-        php artisan migrate --force || true
-        php artisan db:seed --force || true
+        php artisan migrate --force
+        php artisan db:seed --force # Akan aman karena seeder sudah idempoten dan menggunakan ENV
+      env:
+        # Variabel Lingkungan untuk koneksi database
+        DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_DATABASE: ${{ secrets.DB_DATABASE }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        # Variabel Lingkungan penting untuk Laravel
+        APP_KEY: ${{ secrets.APP_KEY }}
+        APP_ENV: production
+        APP_DEBUG: false
+        # Variabel Lingkungan untuk kredensial admin/user seeder
+        ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+        ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        USER_EMAIL: ${{ secrets.USER_EMAIL }}
+        USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
