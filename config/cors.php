@@ -10,6 +10,7 @@ return [
         'http://localhost:5173',
         'https://santapin-bwfsbxgvdccybtey.southeastasia-01.azurewebsites.net',
         'https://green-pebble-0905ea900.2.azurestaticapps.net/',
+        'https://santapin.store',
     ],
 
     'allowed_origins_patterns' => [],
