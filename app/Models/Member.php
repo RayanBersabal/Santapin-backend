@@ -15,6 +15,7 @@ class Member extends Model
         'task',
         'image',
         'github',
+        'nim',
     ];
 
     /**

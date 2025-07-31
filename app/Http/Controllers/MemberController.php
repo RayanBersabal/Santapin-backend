@@ -30,6 +30,7 @@ class MemberController extends Controller
             'task.*' => 'nullable|string', // Setiap item di task harus string
             'image' => 'nullable|url|max:2048',
             'github' => 'nullable|url|max:2048',
+            'nim' => 'nullable|string|max:255',
         ]);
 
         // Pastikan role dan task adalah array, jika null dari input, set ke array kosong
@@ -61,6 +62,7 @@ class MemberController extends Controller
             'task.*' => 'nullable|string',
             'image' => 'nullable|url|max:2048',
             'github' => 'nullable|url|max:2048',
+            'nim' => 'nullable|string|max:255'
         ]);
 
         // Pastikan role dan task adalah array, jika null dari input, set ke array kosong

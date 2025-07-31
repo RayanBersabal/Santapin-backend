@@ -22,22 +22,23 @@ class MemberSeeder extends Seeder
         $members = [
             [
                 'name' => 'Egidius Dicky Narendra Baas',
-                'role' => ['Team Leader', 'Backend Developer'], // Array of roles
+                'role' => ['Team Leader', 'UI/UX Designer'], // Array of roles
                 'task' => [
                     'Mengkoordinasikan tim dan arsitektur proyek',
-                    'Mengembangkan API backend',
-                    'Manajemen database'
+                    'Merancang pengalaman interaktif',
+                    'Implementasi desain responsif',
+
                 ],
                 'image' => 'https://avatars.githubusercontent.com/u/162414603?v=4',
                 'github' => 'https://github.com/egidiusdicky',
             ],
             [
                 'name' => 'Rayan',
-                'role' => ['Frontend Developer', 'UI/UX Designer'],
+                'role' => ['Frontend Developer', 'Backend Developer'],
                 'task' => [
                     'Mengembangkan antarmuka pengguna',
-                    'Merancang pengalaman interaktif',
-                    'Implementasi desain responsif'
+                    'Mengembangkan API backend',
+                    'Manajemen database'
                 ],
                 'image' => 'https://avatars.githubusercontent.com/u/87006289?v=4',
                 'github' => 'https://github.com/rayanbersabal',
