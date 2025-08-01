@@ -24,7 +24,7 @@ class Member extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'role' => 'array', // Casting ke array saat diambil dari DB
-        'task' => 'array', // Casting ke array saat diambil dari DB
+        'role' => 'array',
+        'task' => 'array',
     ];
 }
