@@ -18,7 +18,6 @@ class ReviewController extends Controller
     public function store(Request $request)
     {
         try {
-            // Validasi data yang dikirim dari frontend
             $validatedData = $request->validate([
                 'orderId' => 'required|exists:orders,id',
                 'productId' => 'required|exists:products,id',
@@ -26,12 +25,10 @@ class ReviewController extends Controller
                 'comment' => 'nullable|string|max:1000',
             ]);
 
-            // Periksa apakah user sudah mereview produk ini melalui order ini
-            // Ini akan mencegah user mereview produk yang sama di pesanan yang sama
             $existingReview = Review::where('user_id', $request->user()->id)
-                                    ->where('product_id', $validatedData['productId'])
                                     ->where('order_id', $validatedData['orderId'])
-                                    ->first();
+                                    ->where('product_id', $validatedData['productId'])
+                                    ->exists();
 
             if ($existingReview) {
                 return response()->json([
@@ -66,7 +63,6 @@ class ReviewController extends Controller
         }
     }
 
-    // Metode update dan destroy tidak diubah
     public function update(Request $request, Review $review)
     {
         // Authorization: Hanya pemilik review atau admin yang bisa update
