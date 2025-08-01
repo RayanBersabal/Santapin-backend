@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Member; // Pastikan ini di-import
-use Illuminate\Support\Facades\Schema; // Untuk truncate
+use App\Models\Member;
+use Illuminate\Support\Facades\Schema;
 
 class MemberSeeder extends Seeder
 {
@@ -13,24 +13,25 @@ class MemberSeeder extends Seeder
      */
     public function run(): void
     {
-        // Opsional: Kosongkan tabel sebelum seeding untuk menghindari duplikasi
-        // Hanya lakukan ini jika Anda ingin tabel selalu bersih saat seeder dijalankan
-        Schema::disableForeignKeyConstraints(); // Nonaktifkan foreign key checks sementara
+        // Nonaktifkan foreign key checks untuk sementara
+        Schema::disableForeignKeyConstraints();
+        // Kosongkan tabel members
         Member::truncate();
-        Schema::enableForeignKeyConstraints(); // Aktifkan kembali
+        // Aktifkan kembali foreign key checks
+        Schema::enableForeignKeyConstraints();
 
         $members = [
             [
                 'name' => 'Egidius Dicky Narendra Baas',
-                'role' => ['Team Leader', 'UI/UX Designer'], // Array of roles
+                'role' => ['Team Leader', 'UI/UX Designer'],
                 'task' => [
                     'Mengkoordinasikan tim dan arsitektur proyek',
                     'Merancang pengalaman interaktif',
                     'Implementasi desain responsif',
-
                 ],
                 'image' => 'https://avatars.githubusercontent.com/u/162414603?v=4',
                 'github' => 'https://github.com/egidiusdicky',
+                'nim' => '23.11.5490',
             ],
             [
                 'name' => 'Rayan',
@@ -42,6 +43,7 @@ class MemberSeeder extends Seeder
                 ],
                 'image' => 'https://avatars.githubusercontent.com/u/87006289?v=4',
                 'github' => 'https://github.com/rayanbersabal',
+                'nim' => '23.11.5486',
             ],
             [
                 'name' => 'Garda Fitrananda',
@@ -53,6 +55,7 @@ class MemberSeeder extends Seeder
                 ],
                 'image' => 'https://avatars.githubusercontent.com/u/202229964?v=4',
                 'github' => 'https://github.com/gardafitrananda',
+                'nim' => '23.11.5440',
             ],
             [
                 'name' => 'Sauzana',
@@ -64,6 +67,7 @@ class MemberSeeder extends Seeder
                 ],
                 'image' => 'https://avatars.githubusercontent.com/u/202231744?v=4',
                 'github' => 'https://github.com/Sauzana1919',
+                'nim' => '23.11.5422',
             ],
             [
                 'name' => 'Sandi Setiawan',
@@ -75,6 +79,7 @@ class MemberSeeder extends Seeder
                 ],
                 'image' => 'https://avatars.githubusercontent.com/u/193219383?v=4',
                 'github' => 'https://github.com/SandiSetiawann',
+                'nim' => '23.11.5443',
             ],
             [
                 'name' => 'Fahrudiansyah',
@@ -86,7 +91,9 @@ class MemberSeeder extends Seeder
                 ],
                 'image' => 'https://avatars.githubusercontent.com/u/202230345?v=4',
                 'github' => 'https://github.com/Fahrudiyansah',
+                'nim' => '23.11.5459',
             ],
+
         ];
 
         foreach ($members as $member) {
