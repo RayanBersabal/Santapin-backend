@@ -39,7 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders', [OrderController::class, 'store']);
 
-    Route::post('/products/{product}/reviews', [ReviewController::class, 'store']);
+    // Rute BARU untuk menyimpan ulasan dari halaman pesanan
+    Route::post('/reviews', [ReviewController::class, 'store']);
     Route::put('/reviews/{review}', [ReviewController::class, 'update']);
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy']);
 });
@@ -61,7 +62,6 @@ Route::middleware(['auth:sanctum','is_admin'])->prefix('admin')->group(function 
     // Serta GET /admin/members (untuk daftar) dan GET /admin/members/{id} (untuk detail)
     Route::apiResource('members', MemberController::class);
 });
-
 
 
 // Health check untuk memastikan api ada / terhubung (opsional)

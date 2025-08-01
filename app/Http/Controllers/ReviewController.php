@@ -15,27 +15,38 @@ class ReviewController extends Controller
     }
 
 
-    public function store(Request $request, Product $product)
+    public function store(Request $request)
     {
         try {
+            // Validasi data yang dikirim dari frontend
             $validatedData = $request->validate([
+                'orderId' => 'required|exists:orders,id',
+                'productId' => 'required|exists:products,id',
                 'rating' => 'required|integer|min:1|max:5',
                 'comment' => 'nullable|string|max:1000',
             ]);
 
-            if ($product->reviews()->where('user_id', $request->user()->id)->exists()) {
+            // Periksa apakah user sudah mereview produk ini melalui order ini
+            // Ini akan mencegah user mereview produk yang sama di pesanan yang sama
+            $existingReview = Review::where('user_id', $request->user()->id)
+                                    ->where('product_id', $validatedData['productId'])
+                                    ->where('order_id', $validatedData['orderId'])
+                                    ->first();
+
+            if ($existingReview) {
                 return response()->json([
-                    'message' => 'Anda sudah memberikan review untuk produk ini.'
+                    'message' => 'Anda sudah memberikan review untuk produk ini pada pesanan yang sama.'
                 ], 409);
             }
 
-            $review = $product->reviews()->create([
+            $review = Review::create([
                 'user_id' => $request->user()->id,
+                'order_id' => $validatedData['orderId'],
+                'product_id' => $validatedData['productId'],
                 'rating' => $validatedData['rating'],
                 'comment' => $validatedData['comment'] ?? null,
             ]);
 
-            // Muat user relationship untuk response
             $review->load('user');
 
             return response()->json([
@@ -55,6 +66,7 @@ class ReviewController extends Controller
         }
     }
 
+    // Metode update dan destroy tidak diubah
     public function update(Request $request, Review $review)
     {
         // Authorization: Hanya pemilik review atau admin yang bisa update
