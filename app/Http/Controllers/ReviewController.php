@@ -3,32 +3,52 @@
 namespace App\Http\Controllers;
 
 use App\Models\Review;
-use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class ReviewController extends Controller
 {
-    public function index(Product $product)
+    /**
+     * Mengambil daftar ulasan, bisa difilter berdasarkan product_id atau order_id.
+     */
+    public function index(Request $request)
     {
-        return response()->json($product->reviews()->with('user')->latest()->get());
+        // Query builder untuk ulasan
+        $query = Review::with('user')->latest();
+
+        // Filter berdasarkan product_id jika ada
+        if ($request->has('product_id')) {
+            $query->where('product_id', $request->get('product_id'));
+        }
+
+        // Filter berdasarkan order_id jika ada
+        if ($request->has('order_id')) {
+            $query->where('order_id', $request->get('order_id'));
+        }
+
+        return response()->json([
+            'data' => $query->get()
+        ]);
     }
 
-
+    /**
+     * Menyimpan ulasan baru ke database.
+     */
     public function store(Request $request)
     {
         try {
+            // Perbaiki: Validasi menggunakan snake_case untuk order_id dan product_id
             $validatedData = $request->validate([
-                'orderId' => 'required|exists:orders,id',
-                'productId' => 'required|exists:products,id',
+                'order_id' => 'required|exists:orders,id',
+                'product_id' => 'required|exists:products,id',
                 'rating' => 'required|integer|min:1|max:5',
                 'comment' => 'nullable|string|max:1000',
             ]);
 
             $existingReview = Review::where('user_id', $request->user()->id)
-                                    ->where('order_id', $validatedData['orderId'])
-                                    ->where('product_id', $validatedData['productId'])
-                                    ->exists();
+                                        ->where('order_id', $validatedData['order_id'])
+                                        ->where('product_id', $validatedData['product_id'])
+                                        ->exists();
 
             if ($existingReview) {
                 return response()->json([
@@ -36,10 +56,11 @@ class ReviewController extends Controller
                 ], 409);
             }
 
+            // Perbaiki: Gunakan data dari $validatedData
             $review = Review::create([
                 'user_id' => $request->user()->id,
-                'order_id' => $validatedData['orderId'],
-                'product_id' => $validatedData['productId'],
+                'order_id' => $validatedData['order_id'],
+                'product_id' => $validatedData['product_id'],
                 'rating' => $validatedData['rating'],
                 'comment' => $validatedData['comment'] ?? null,
             ]);
@@ -50,6 +71,7 @@ class ReviewController extends Controller
                 'message' => 'Review berhasil dikirim!',
                 'review' => $review
             ], 201);
+
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validasi gagal.',
@@ -63,9 +85,11 @@ class ReviewController extends Controller
         }
     }
 
+    /**
+     * Memperbarui ulasan yang sudah ada.
+     */
     public function update(Request $request, Review $review)
     {
-        // Authorization: Hanya pemilik review atau admin yang bisa update
         if ($request->user()->id !== $review->user_id && !$request->user()->is_admin) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
@@ -83,6 +107,7 @@ class ReviewController extends Controller
                 'message' => 'Review berhasil diperbarui!',
                 'review' => $review
             ]);
+
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validasi gagal.',
@@ -96,9 +121,11 @@ class ReviewController extends Controller
         }
     }
 
+    /**
+     * Menghapus ulasan.
+     */
     public function destroy(Request $request, Review $review)
     {
-        // Authorization: Hanya pemilik review atau admin yang bisa menghapus
         if ($request->user()->id !== $review->user_id && !$request->user()->is_admin) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }

@@ -17,9 +17,13 @@ Route::post('/admin-login', [AuthController::class, 'adminLogin']);
 // Public Product Access (GET only)
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
+
+// Rute yang BENAR untuk mengambil ulasan berdasarkan produk
 Route::get('/products/{product}/reviews', [ReviewController::class, 'index']);
+
 // Digunakan oleh halaman About.vue untuk menampilkan daftar tim
 Route::get('/members', [MemberController::class, 'index']);
+Route::get('/reviews', [ReviewController::class, 'index']);
 
 
 // Routes untuk User
@@ -39,7 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders', [OrderController::class, 'store']);
 
-    // Rute BARU untuk menyimpan ulasan dari halaman pesanan
+    // Rute BARU untuk menyimpan, mengedit, dan menghapus ulasan
     Route::post('/reviews', [ReviewController::class, 'store']);
     Route::put('/reviews/{review}', [ReviewController::class, 'update']);
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy']);
